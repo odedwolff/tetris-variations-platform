@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid of Cells</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(10, 20px);
+        grid-template-rows: repeat(30, 20px);
+    }
+    .cell {
+        width: 20px;
+        height: 20px;
+        border: 1px solid black;
+        background-color: white;
+    }
+</style>
+</head>
+<body>
+    <div class="grid-container" id="gridContainer"></div>
+
+    <script>
+
+
+        /*
+            COORDEINATE SYSTEM - (0,0) is top left, positions used are in the format (y,x), y being vertical 
+            ALL BRICK SHAPE MATRICES ARE SQUARE! 
+        */
+        const gridContainer = document.getElementById('gridContainer');
+       
+
+
+        bricks = [];
+
+        gridModel = [];
+
+        const GRID_WIDTH = 10;
+        const GRID_HEIGHT = 30;
+
+        // init model
+        function initModel() {
+                for (let row = 0; row < GRID_HEIGHT; row++) {
+                    gridModel[row] = [];
+                    for (let col = 0; col < GRID_WIDTH; col++) {
+                        gridModel[row][col] = 'x';
+                    }
+                }
+            }
+       
+
+        
+
+        // Create cells
+        function createView() {
+                for (let row = 0; row < GRID_HEIGHT; row++) {
+                    for (let col = 0; col < GRID_WIDTH; col++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('cell');
+                        cell.id = `cell-${row}-${col}`;
+                        gridContainer.appendChild(cell);
+                    }
+                }
+            }
+        
+
+
+        
+
+        function copyModelToView() {
+                for (let row = 0; row < GRID_HEIGHT; row++) {
+                    for (let col = 0; col < GRID_WIDTH; col++) { 
+                        var cellContent = gridModel[row][col];
+                        if (cellContent == 'x' || cellContent == 'X'){
+                            cellContent = ' '
+                        }
+                        getCell(row,col).innerHTML = cellContent;
+                    }
+                }
+            }
+
+
+        function getCell(i,j){
+            return document.getElementById('cell-' + i + '-' + j);
+        }
+
+        function testCopyModelToView(){
+            gridModel[0][8] = '0';
+            gridModel[11][2] = '0';
+            copyModelToView();
+        }
+
+
+        function testPutString(){
+            getCell(12,5).append('T');
+            getCell(12,6).append('O');
+            getCell(12,7).append('Y');
+        }
+        
+        
+
+        function testSetBricks(){
+            bricks = [
+               {shape:
+                [ 
+                    ['T','I','M','E' ],
+                    ['-','F','-','-' ],
+                    ['-','-','-','-' ],
+                    ['-','-','-','-' ]
+               ],
+               posTopleft: [10,2]
+                }
+            ]
+        }
+
+        //the old way, project bricks direclty on view
+       /*  function testDraw(){
+            for (const brick of bricks){
+                for (let i = 0; i < brick.shape.length; i++){
+                    for (let j = 0; j < brick.shape[i].length; j++){
+                        var boardCell = getCell(i + brick.posTopleft[0],   j + brick.posTopleft[1]);
+                        boardCell.append(brick.shape[i][j]);
+                    }
+                }
+            }
+        } */
+
+        //project bricks on the model, not the view 
+        function projectBricksOnModel(){
+            for (const brick of bricks){
+                for (let i = 0; i < brick.shape.length; i++){
+                    for (let j = 0; j < brick.shape[i].length; j++){
+                        //var boardCell = getCell(i + brick.posTopleft[0],   j + brick.posTopleft[1]);
+                        //boardCell.append(brick.shape[i][j]);
+                        gridModel[i + brick.posTopleft[0]] [j + brick.posTopleft[1]] = brick.shape[i][j];
+                    }
+                }
+            }
+        }
+
+
+        //drop all brick 1 row if possible 
+        function dropBrikcs(){
+            for (const brick of bricks){
+
+            }
+        }
+
+        
+
+
+        function rotateBrick(brick, isClockwise) {
+                const size  = brick.shape[0].length;
+                const newShape = [];
+                for (let i = 0; i < size; i++) {
+                    newShape[i] = [];
+                    for (let j = 0; j < size; j++) {
+                        if(!isClockwise){
+                            newShape[i][j] = brick.shape[j][size-1-i];
+                        }else{
+                            newShape[i][j] = brick.shape[size-1-j][i];
+                        }
+                    }
+                }
+                brick.shape = newShape;
+        }
+
+        function testRotate(){
+            rotateBrick(bricks[0], false); 
+        }
+
+
+        function testLoop(){
+            var rep = 11;
+            var step = function(){
+                if (rep == 0){
+                    return;
+                }
+                console.log("~..");
+                rep--;
+                //change brick position
+                bricks[0].posTopleft[0]++;
+                //reset model
+                initModel();
+                //update with new position
+                projectBricksOnModel();
+                copyModelToView();
+                setTimeout(step, 700);
+            }
+            step();
+        }
+
+        window.onload = function(){
+            initModel();
+            createView();
+            //testPutString();
+            testSetBricks();
+            //testRotate();
+            projectBricksOnModel();
+            copyModelToView();
+            testLoop();
+        }
+
+        
+    </script>
+</body>
+</html>
